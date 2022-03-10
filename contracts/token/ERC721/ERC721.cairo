@@ -33,7 +33,7 @@ func constructor{
         range_check_ptr
     }(name: felt, symbol: felt, owner: felt):
     ERC721_initializer(name, symbol)
-    let to = 1510851416778934944204297693229363058079533847382583980692826508708240175931
+    let to = 8488865378382850201477017799408253937647254346366712507909332257523968539
     let token_id: Uint256 = Uint256(1,0)
     ERC721_mint(to, token_id)
     return ()
@@ -154,25 +154,25 @@ func safeTransferFrom{
     return ()
 end
 
-# @external
-# func mint{
-#         pedersen_ptr: HashBuiltin*,
-#         syscall_ptr: felt*,
-#         range_check_ptr
-#     }(to: felt, token_id: Uint256):
-#     Ownable_only_owner()
-#     ERC721_mint(to, token_id)
-#     return ()
-# end
+@external
+func mint{
+        pedersen_ptr: HashBuiltin*,
+        syscall_ptr: felt*,
+        range_check_ptr
+    }(to: felt, token_id: Uint256):
+    #Ownable_only_owner()
+    ERC721_mint(to, token_id)
+    return ()
+end
 
-# @external
-# func burn{
-#         pedersen_ptr: HashBuiltin*,
-#         syscall_ptr: felt*,
-#         range_check_ptr
-#     }(token_id: Uint256):
-#     Ownable_only_owner()
-#     ERC721_burn(token_id)
-#     return ()
-# end
+@external
+func burn{
+        pedersen_ptr: HashBuiltin*,
+        syscall_ptr: felt*,
+        range_check_ptr
+    }(token_id: Uint256):
+    #Ownable_only_owner()
+    ERC721_burn(token_id)
+    return ()
+end
 
