@@ -16,6 +16,7 @@ namespace IExerciceSolution:
     end
     func get_animal_characteristics(token_id: Uint256) -> (sex: felt, legs: felt, wings: felt) :
     end
+    
     func token_of_owner_by_index(account:felt, index:felt) -> (token_id: Uint256):
     end
     func declare_dead_animal(token_id: Uint256):

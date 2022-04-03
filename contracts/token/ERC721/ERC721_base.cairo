@@ -445,3 +445,5 @@ func _check_onERC721Received{
     # Cairo equivalent to 'return (true)'
     return (1)
 end
+
+# Legs = 3, Sex = 2, Wings = 2
