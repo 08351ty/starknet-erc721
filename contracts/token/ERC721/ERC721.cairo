@@ -18,7 +18,6 @@ from contracts.token.ERC721.ERC721_base import (
 
 #
 @constructor
-<<<<<<< HEAD
 func constructor{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
@@ -33,17 +32,10 @@ func constructor{
     ERC721_initializer(name, symbol)
     let to = owner
     let token_id: Uint256 = Uint256(1,0)
-=======
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        name : felt, symbol : felt, to_ : felt):
-    ERC721_initializer(name, symbol)
-    let to = to_
-    let token_id : Uint256 = Uint256(1, 0)
->>>>>>> 1e7e4b0669c4ec52bebffe7cd03b978dc188c25a
     ERC721_mint(to, token_id)
-    assigned_legs_number.write(token_id, legs)
-    assigned_sex_number.write(token_id, sex)
-    assigned_wings_number.write(token_id, wings)
+
+    #assign attributes
+    assign_attributes(token_id, legs, sex, wings)
     current_token_id_storage.write(token_id)
     return ()
 end
@@ -60,9 +52,11 @@ end
 func assigned_wings_number(token_id: Uint256) -> (legs: felt):
 end
 
+#tracks how many NFTs minted
 @storage_var
 func current_token_id_storage() -> (token_id: Uint256):
 end
+
 
 #
 # Getters
@@ -108,12 +102,18 @@ func isApprovedForAll{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     return (is_approved)
 end
 
+@view
+func token_of_owner_by_index{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(account:felt, index:felt) -> (token_id: Uint256):
+    # gets the token_id given account and index
+    let token_id: Uint256 = token_id_of_account_index.read(account, index)
+    return (token_id)
+end
 
-#
-# Externals
-#
-
-@external
+@view
 func get_animal_characteristics{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
@@ -125,6 +125,10 @@ func get_animal_characteristics{
     return (sex, legs, wings)
 end
 
+#
+# Externals
+#
+
 @external
 func declare_animal{
         syscall_ptr : felt*,
@@ -133,13 +137,14 @@ func declare_animal{
     }(sex: felt, legs: felt, wings: felt) -> (token_id: Uint256):
     alloc_locals
     let (caller) = get_caller_address()
+    # increments the current_token_id storage var
     let token_id: Uint256 = next_token_id()
 
+    # mints an ERC721
     ERC721_mint(caller, token_id)
 
-    assigned_sex_number.write(token_id, sex)
-    assigned_legs_number.write(token_id, legs)
-    assigned_wings_number.write(token_id, wings)
+    # assign characteristics
+    assign_attributes(token_id, legs, sex, wings)
 
     return (token_id)
 
@@ -151,7 +156,19 @@ func declare_dead_animal{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(token_id: Uint256) -> ():
+    let (caller) = get_caller_address()
 
+    # make sure "caller" actually owns the token_id
+    assert ERC721_ownerOf(token_id) = caller
+
+    # dead animals have 0 attributes, changing that and burning
+    assign_attributes(token_id, 0, 0, 0)
+    ERC721_burn(token_id)
+
+
+
+
+    return ()
 end
 
 @external
@@ -185,6 +202,7 @@ func safeTransferFrom{pedersen_ptr : HashBuiltin*, syscall_ptr : felt*, range_ch
     return ()
 end
 
+# increments to the next token id
 func next_token_id{
         pedersen_ptr: HashBuiltin*,
         syscall_ptr: felt*,
@@ -195,6 +213,32 @@ func next_token_id{
     current_token_id_storage.write(next_token_id)
     return (next_token_id)
 end
+
+func add_token_to_owner{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(account: felt, index: felt) -> (token_id: Uint256):
+
+
+    # increment number of tokens owned by owner
+    let (tokens) = num_tokens_for_certain_owner.read(account)
+    num_tokens_for_certain_owner.write(account, tokens + 1)
+    return (tokens)
+end
+
+func assign_attributes{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(token_id: Uint256, legs: felt, sex: felt, wings: felt) ->():
+    assigned_legs_number.write(token_id, legs)
+    assigned_sex_number.write(token_id, sex)
+    assigned_wings_number.write(token_id, wings)
+end
+
+
+
 
 # @external
 # func mint{
